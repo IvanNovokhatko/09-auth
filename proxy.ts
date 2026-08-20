@@ -17,6 +17,7 @@ export async function proxy(request: NextRequest) {
   const refreshToken = cookieStore.get('refreshToken');
 
   let isAuthenticated = !!accessToken?.value;
+  const updatedCookies: Array<{ name: string; value: string; options: any }> = [];
 
   if (!isAuthenticated && refreshToken?.value) {
     try {
@@ -40,6 +41,7 @@ export async function proxy(request: NextRequest) {
 
           if (parsed.value) {
             cookieStore.set(parsed.name, parsed.value, parsed);
+            updatedCookies.push({ name: parsed.name, value: parsed.value, options: parsed });
           }
         }
       }
@@ -50,17 +52,23 @@ export async function proxy(request: NextRequest) {
     }
   }
 
+  let response: NextResponse;
+
   if (isPrivateRoute && !isAuthenticated) {
     const signInUrl = new URL('/sign-in', request.url);
-    return NextResponse.redirect(signInUrl);
-  }
-
-  if (isPublicRoute && isAuthenticated) {
+    response = NextResponse.redirect(signInUrl);
+  } else if (isPublicRoute && isAuthenticated) {
     const homeUrl = new URL('/', request.url);
-    return NextResponse.redirect(homeUrl);
+    response = NextResponse.redirect(homeUrl);
+  } else {
+    response = NextResponse.next();
   }
 
-  return NextResponse.next();
+  for (const cookie of updatedCookies) {
+    response.cookies.set(cookie.name, cookie.value, cookie.options);
+  }
+
+  return response;
 }
 
 export const config = {
