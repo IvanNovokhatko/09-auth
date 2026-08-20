@@ -79,7 +79,7 @@ export const getMe = async (): Promise<User> => {
   return response.data;
 };
 
-export const updateMe = async (payload: Partial<User>): Promise<User> => {
+export const updateMe = async (payload: { username: string }): Promise<User> => {
   const response = await api.patch<User>('/users/me', payload);
   return response.data;
 };
