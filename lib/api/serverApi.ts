@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import type { AxiosResponse } from 'axios';
 import type { Note } from '@/types/note';
 import type { User } from '@/types/user';
 import { api } from './api';
@@ -50,21 +51,10 @@ export const getMe = async (): Promise<User> => {
   return response.data;
 };
 
-export const checkSession = async (): Promise<{ data?: User } | undefined> => {
+export const checkSession = async (): Promise<AxiosResponse> => {
   const response = await api.get('/auth/session', {
     headers: await getCookieHeader(),
   });
 
-  return response.data ? response : undefined;
-};
-
-export const checkSessionWithHeaders = async () => {
-  const response = await api.get('/auth/session', {
-    headers: await getCookieHeader(),
-  });
-
-  return {
-    data: response.data,
-    headers: response.headers,
-  };
+  return response;
 };
