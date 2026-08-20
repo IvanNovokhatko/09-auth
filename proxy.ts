@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import axios from 'axios';
 import { parseSetCookie } from 'cookie';
+import { checkSessionWithHeaders } from './lib/api/serverApi';
 
 const privateRoutes = ['/profile', '/notes'];
 const publicRoutes = ['/sign-in', '/sign-up'];
@@ -21,18 +21,8 @@ export async function proxy(request: NextRequest) {
 
   if (!isAuthenticated && refreshToken?.value) {
     try {
-      const api = axios.create({
-        baseURL: 'https://notehub-api.goit.study',
-        withCredentials: true,
-      });
-
-      const response = await api.get('/auth/session', {
-        headers: {
-          Cookie: cookieStore.toString(),
-        },
-      });
-
-      const setCookie = response.headers['set-cookie'];
+      const sessionResponse = await checkSessionWithHeaders();
+      const setCookie = sessionResponse.headers['set-cookie'];
 
       if (setCookie) {
         const cookieArray = Array.isArray(setCookie) ? setCookie : [setCookie];

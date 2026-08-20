@@ -57,3 +57,14 @@ export const checkSession = async (): Promise<{ data?: User } | undefined> => {
 
   return response.data ? response : undefined;
 };
+
+export const checkSessionWithHeaders = async () => {
+  const response = await api.get('/auth/session', {
+    headers: await getCookieHeader(),
+  });
+
+  return {
+    data: response.data,
+    headers: response.headers,
+  };
+};
